@@ -31,8 +31,86 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 
 ---
 
-### Session Status:
-* [x] MVP Requirements defined
-* [x] Architecture & schema modeled
-* [x] Root repository workspace initialized (`.gitignore`, `docker-compose.yml`, `README.md`)
-* [ ] Step 2: Initialize NestJS backend and Prisma schema
+## Session 2 — Backend Foundation & Relational Schema Setup
+
+**Date**: 23 October 2026  
+**Objective**: Scaffold the NestJS backend, configure PostgreSQL, run initial migration, and establish architecture blueprint.
+
+### Achievements:
+1. **NestJS 12 Service Scaffolded**: Clean modular structure in `backend/` with global prefix `/api` and Angular CORS support.
+2. **PostgreSQL Configuration**: Native PostgreSQL configured (`preparation_pilot_db`), connection credentials URL-encoded safely.
+3. **Prisma 6 Setup & Migration**:
+   * Defined relational models in `backend/prisma/schema.prisma`.
+   * Created and applied initial migration (`init`).
+   * Generated type-safe `@prisma/client`.
+4. **Prisma Module**: Created `@Global()` `PrismaService` and `PrismaModule` for dependency injection.
+5. **Architecture Documentation**: Authored comprehensive [`backend/BACKEND_ARCHITECTURE.md`](./backend/BACKEND_ARCHITECTURE.md) covering ER diagrams, request lifecycles, and complete REST API specifications.
+
+---
+
+## Session 3 — Skills Profile Module Implementation
+
+**Date**: 23 October 2026  
+**Objective**: Build the evidence-first Skills Profile vertical slice in NestJS.
+
+### Achievements:
+1. **DTOs & Strict Validation**:
+   * `CreateSkillDto`: Enforces `name`, `category`, and **mandatory `evidenceNotes`** to prevent groundless proficiency claims.
+   * `UpdateSkillDto`: Allows incremental updates to skills and evidence notes.
+2. **Business Logic & Error Handling**:
+   * `SkillsService`: Implemented full CRUD with uniqueness checks (`ConflictException`) and not-found guards (`NotFoundException`).
+3. **RESTful Controller**:
+   * `SkillsController` exposed at `/api/skills` (`POST`, `GET`, `GET :id`, `PUT :id`, `DELETE :id`).
+4. **Global Validation Pipe**:
+   * Enabled whitelist stripping and automatic transformation in `main.ts`.
+5. **Prisma Seed Script**:
+   * Created `prisma/seed.ts` containing realistic evidence notes for NestJS, PostgreSQL, Angular, and Docker.
+
+---
+
+## Session 4 — Confirmed Interview Management Module
+
+**Date**: 23 October 2026  
+**Objective**: Build the confirmed interview management workspace slice in NestJS.
+
+### Achievements:
+1. **DTOs & Round Typing**:
+   * `CreateInterviewDto`: Validates `company`, `role`, typed `roundType` (`SCREENING`, `TECHNICAL`, `SYSTEM_DESIGN`, `BEHAVIORAL`, `OTHER`), ISO 8601 `scheduledAt`, and mandatory `jobDescriptionText`.
+   * `UpdateInterviewDto`: Supports updating schedule, notes, or interview details.
+2. **Business Logic with Auto-Checklist**:
+   * `InterviewsService`: Creates new interviews with automatic prep tasks pre-populated (`ChecklistItem` table).
+   * Eager loading: `findOne(id)` retrieves the interview workspace including all assessments, questions, and checklist items.
+3. **RESTful Controller**:
+   * `InterviewsController` exposed at `/api/interviews` (`POST`, `GET`, `GET :id`, `PUT :id`, `DELETE :id`).
+4. **Registered Module**:
+   * `InterviewsModule` wired into `AppModule`.
+
+---
+
+## Session 5 — AI Service & Skill-Gap Analysis Engine
+
+**Date**: 23 October 2026  
+**Objective**: Integrate Google Gemini API with structured JSON output schema and build the evidence-backed skill gap detection engine with candidate override.
+
+### Achievements:
+1. **Google GenAI SDK Integration**:
+   * `AiService` utilizing `@google/genai` with `gemini-2.5-flash` model.
+   * Strict JSON schema enforcement ensuring 100% reliable responses without regex or markdown extraction glitches.
+2. **Evidence-Grounded Prompting**:
+   * The AI cross-references JD requirements specifically against candidate `evidenceNotes` (not labels).
+   * Generates exact JD citations (`jdRequirementText`) and detailed rationale (`aiRationale`) for each detected item.
+3. **Persisted Gap Assessments**:
+   * `AnalysisService`: Cleans previous assessments and saves fresh assessments into `interview_skill_assessments` table.
+4. **Candidate Override (Human-in-the-Loop)**:
+   * `PATCH /api/interviews/:id/assessments/:assessmentId` allows candidates to override `verifiedLevel` and add personal `userNotes`.
+
+---
+
+### Progress Tracker:
+* [x] Step 1: MVP Requirements defined & repository initialized
+* [x] Step 2: Initialize NestJS backend, native PostgreSQL, and Prisma schema migration
+* [x] Step 3: Architecture Blueprint Documented (`BACKEND_ARCHITECTURE.md`)
+* [x] Step 4: Implement Skills Profile Module (CRUD with evidence notes)
+* [x] Step 5: Implement Interview Management Module
+* [x] Step 6: Implement AI Service & Skill-Gap Analysis Engine
+* [ ] Step 7: Implement Practice Questions & Readiness Score Engine
