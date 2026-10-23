@@ -6,6 +6,7 @@ import { SkillsModule } from './modules/skills/skills.module.js';
 import { InterviewsModule } from './modules/interviews/interviews.module.js';
 import { AiModule } from './modules/ai/ai.module.js';
 import { AnalysisModule } from './modules/analysis/analysis.module.js';
+import { QuestionsModule } from './modules/questions/questions.module.js';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AnalysisModule } from './modules/analysis/analysis.module.js';
     InterviewsModule,
     AiModule,
     AnalysisModule,
+    QuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

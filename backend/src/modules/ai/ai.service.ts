@@ -8,9 +8,21 @@ export interface SkillGapItem {
   suggestedLevel: 'STRENGTH' | 'MINOR_GAP' | 'CRITICAL_GAP';
 }
 
+export interface GeneratedQuestionItem {
+  questionText: string;
+  targetedSkill: string;
+  sampleTalkingPoints: string[];
+}
+
 @Injectable()
 export class AiService {
   private ai: GoogleGenAI;
+  // Primary model with fallback models in case of temporary 503 capacity spikes
+  private readonly models = [
+    'gemini-3.8-flash',
+    'gemini-3.8-pro',
+    'gemini-2.5-flash',
+  ];
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -20,6 +32,48 @@ export class AiService {
       );
     }
     this.ai = new GoogleGenAI({ apiKey: apiKey || '' });
+  }
+
+  /**
+   * Resilient execution wrapper with retry and model fallback for 503 / 429 errors.
+   */
+  private async executeWithFallback(
+    fn: (modelName: string) => Promise<any>,
+  ): Promise<any> {
+    let lastError: any = null;
+
+    for (const modelName of this.models) {
+      // Try up to 2 attempts per model with a short backoff
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          return await fn(modelName);
+        } catch (error: any) {
+          lastError = error;
+          const status = error?.status || error?.code || error?.error?.code;
+          const message = error?.message || '';
+
+          const isTransient =
+            status === 503 ||
+            status === 429 ||
+            message.includes('high demand') ||
+            message.includes('Resource has been exhausted');
+
+          if (isTransient) {
+            console.warn(
+              `⚠️ [Gemini ${modelName}] attempt ${attempt} returned transient error (${message}). Retrying...`,
+            );
+            // Brief backoff before retry (1.5 seconds)
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            continue;
+          }
+
+          // If non-transient model error (e.g. 404 model not found), switch to next model immediately
+          break;
+        }
+      }
+    }
+
+    throw lastError;
   }
 
   async analyzeSkillGaps(
@@ -57,47 +111,49 @@ JOB DESCRIPTION:
 ${jobDescription}
 `;
 
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.ARRAY,
-            description: 'List of skill gap assessments',
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                skillName: {
-                  type: Type.STRING,
-                  description: 'Name of the skill or technical competency',
+      const response = await this.executeWithFallback((model) =>
+        this.ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.ARRAY,
+              description: 'List of skill gap assessments',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  skillName: {
+                    type: Type.STRING,
+                    description: 'Name of the skill or technical competency',
+                  },
+                  jdRequirementText: {
+                    type: Type.STRING,
+                    description:
+                      'Direct quote or requirement excerpt from the Job Description',
+                  },
+                  aiRationale: {
+                    type: Type.STRING,
+                    description:
+                      'Detailed reasoning contrasting the candidate evidence notes with the JD need',
+                  },
+                  suggestedLevel: {
+                    type: Type.STRING,
+                    enum: ['STRENGTH', 'MINOR_GAP', 'CRITICAL_GAP'],
+                    description: 'Proposed gap categorization',
+                  },
                 },
-                jdRequirementText: {
-                  type: Type.STRING,
-                  description:
-                    'Direct quote or requirement excerpt from the Job Description',
-                },
-                aiRationale: {
-                  type: Type.STRING,
-                  description:
-                    'Detailed reasoning contrasting the candidate evidence notes with the JD need',
-                },
-                suggestedLevel: {
-                  type: Type.STRING,
-                  enum: ['STRENGTH', 'MINOR_GAP', 'CRITICAL_GAP'],
-                  description: 'Proposed gap categorization',
-                },
+                required: [
+                  'skillName',
+                  'jdRequirementText',
+                  'aiRationale',
+                  'suggestedLevel',
+                ],
               },
-              required: [
-                'skillName',
-                'jdRequirementText',
-                'aiRationale',
-                'suggestedLevel',
-              ],
             },
           },
-        },
-      });
+        }),
+      );
 
       const responseText = response.text;
       if (!responseText) {
@@ -113,5 +169,91 @@ ${jobDescription}
       );
     }
   }
-}
 
+  async generatePracticeQuestions(
+    company: string,
+    role: string,
+    roundType: string,
+    gaps: Array<{ skillName: string; jdRequirementText: string; aiRationale: string }>,
+    strengths: Array<{ skillName: string }>,
+  ): Promise<GeneratedQuestionItem[]> {
+    try {
+      const prompt = `
+You are a Principal Engineering Interviewer conducting a confirmed interview for:
+- Company: ${company}
+- Role: ${role}
+- Round Type: ${roundType}
+
+GOAL:
+Generate 5 to 7 high-yield, realistic interview questions specifically targeted to this round format and the candidate's verified skill gaps.
+
+CRITICAL INSTRUCTIONS:
+1. Heavily prioritize questions addressing the identified SKILL GAPS (${gaps.map((g) => g.skillName).join(', ')}). Formulate questions that test whether the candidate understands the core principles and practical trade-offs despite their reported gap.
+2. The style of questions must strictly match the ROUND TYPE:
+   - SYSTEM_DESIGN: Focus on scalability, distributed systems, partition strategies, failure modes, data consistency, caching.
+   - TECHNICAL: Focus on API design, concurrency, database query optimization, implementation trade-offs, language internals.
+   - BEHAVIORAL: Focus on leadership, technical disagreements, handling outages, prioritizing tech debt (STAR format).
+   - SCREENING: Broad architectural overview, key accomplishments, technical communication.
+3. For each question, provide 3 to 4 actionable "sampleTalkingPoints" that guide the candidate on how to structure a winning answer.
+
+---
+IDENTIFIED SKILL GAPS:
+${JSON.stringify(gaps, null, 2)}
+
+---
+CANDIDATE STRENGTHS (to optionally weave into questions):
+${JSON.stringify(strengths, null, 2)}
+`;
+
+      const response = await this.executeWithFallback((model) =>
+        this.ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.ARRAY,
+              description: 'List of targeted practice interview questions',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  questionText: {
+                    type: Type.STRING,
+                    description: 'The exact interview question',
+                  },
+                  targetedSkill: {
+                    type: Type.STRING,
+                    description: 'The skill or domain gap being tested',
+                  },
+                  sampleTalkingPoints: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                    description: '3-4 concise bullet points for a high-scoring answer',
+                  },
+                },
+                required: [
+                  'questionText',
+                  'targetedSkill',
+                  'sampleTalkingPoints',
+                ],
+              },
+            },
+          },
+        }),
+      );
+
+      const responseText = response.text;
+      if (!responseText) {
+        throw new Error('Empty response received from Gemini API.');
+      }
+
+      const questions: GeneratedQuestionItem[] = JSON.parse(responseText);
+      return questions;
+    } catch (error: any) {
+      console.error('Gemini question generation failed:', error);
+      throw new InternalServerErrorException(
+        `AI Question Generation failed: ${error?.message || 'Unknown error'}`,
+      );
+    }
+  }
+}

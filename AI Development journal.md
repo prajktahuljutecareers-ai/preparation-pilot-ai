@@ -94,7 +94,7 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 
 ### Achievements:
 1. **Google GenAI SDK Integration**:
-   * `AiService` utilizing `@google/genai` with `gemini-2.5-flash` model.
+   * `AiService` utilizing `@google/genai` with `gemini-3.8-flash` model.
    * Strict JSON schema enforcement ensuring 100% reliable responses without regex or markdown extraction glitches.
 2. **Evidence-Grounded Prompting**:
    * The AI cross-references JD requirements specifically against candidate `evidenceNotes` (not labels).
@@ -106,6 +106,24 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 
 ---
 
+## Session 6 — Targeted Question Generator & Deterministic Readiness Engine
+
+**Date**: 23 October 2026  
+**Objective**: Generate round-specific, gap-targeted interview questions with sample talking points and calculate readiness deterministically.
+
+### Achievements:
+1. **Targeted Question Generation**:
+   * `AiService.generatePracticeQuestions`: Crafts 5–7 questions focusing specifically on verified gaps (e.g. Kafka, distributed transactions) tailored to the round type (`SYSTEM_DESIGN`, `TECHNICAL`, `BEHAVIORAL`).
+   * Includes 3–4 actionable `sampleTalkingPoints` per question.
+2. **Practice & Mastery Tracking**:
+   * `QuestionsService` & `QuestionsController`: Endpoints to update question status (`UNPREPARED` → `DRAFTED` → `MASTERED`) and store candidate notes.
+   * Checklist item toggle (`isCompleted: true / false`).
+3. **Deterministic Readiness Algorithm**:
+   * `ReadinessService`: Computes readiness percentage mathematically without AI hallucination (70% question mastery + 30% checklist tasks).
+   * Updates `Interview.readinessScore` in PostgreSQL on every state mutation.
+
+---
+
 ### Progress Tracker:
 * [x] Step 1: MVP Requirements defined & repository initialized
 * [x] Step 2: Initialize NestJS backend, native PostgreSQL, and Prisma schema migration
@@ -113,4 +131,5 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 * [x] Step 4: Implement Skills Profile Module (CRUD with evidence notes)
 * [x] Step 5: Implement Interview Management Module
 * [x] Step 6: Implement AI Service & Skill-Gap Analysis Engine
-* [ ] Step 7: Implement Practice Questions & Readiness Score Engine
+* [x] Step 7: Implement Practice Questions & Readiness Score Engine
+* [ ] Step 8: Angular Frontend Setup & The Prep Room UI
