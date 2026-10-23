@@ -1,0 +1,123 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ProficiencyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RoundType {
+  SCREENING
+  TECHNICAL
+  SYSTEM_DESIGN
+  BEHAVIORAL
+  OTHER
+}
+
+enum InterviewStatus {
+  UPCOMING
+  COMPLETED
+  ARCHIVED
+}
+
+enum SkillAssessmentLevel {
+  STRENGTH
+  MINOR_GAP
+  CRITICAL_GAP
+}
+
+enum QuestionStatus {
+  UNPREPARED
+  DRAFTED
+  MASTERED
+}
+
+model UserSkill {
+  id               String           @id @default(uuid())
+  name             String           @unique
+  category         String
+  proficiencyLevel ProficiencyLevel @default(INTERMEDIATE)
+  evidenceNotes    String           @db.Text
+  yearsExperience  Float?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@map("user_skills")
+}
+
+model Interview {
+  id                 String                     @id @default(uuid())
+  company            String
+  role               String
+  roundType          RoundType                  @default(TECHNICAL)
+  status             InterviewStatus            @default(UPCOMING)
+  scheduledAt        DateTime
+  jobDescriptionText String                     @db.Text
+  notes              String?                    @db.Text
+  readinessScore     Int                        @default(0)
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+
+  assessments        InterviewSkillAssessment[]
+  questions          PracticeQuestion[]
+  checklistItems     ChecklistItem[]
+
+  @@map("interviews")
+}
+
+model InterviewSkillAssessment {
+  id                 String               @id @default(uuid())
+  interviewId        String
+  skillName          String
+  jdRequirementText  String               @db.Text
+  aiRationale        String               @db.Text
+  suggestedLevel     SkillAssessmentLevel
+  verifiedLevel      SkillAssessmentLevel
+  userNotes          String?              @db.Text
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  interview          Interview            @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId])
+  @@map("interview_skill_assessments")
+}
+
+model PracticeQuestion {
+  id                  String         @id @default(uuid())
+  interviewId         String
+  questionText        String         @db.Text
+  targetedSkill       String?
+  sampleTalkingPoints String[]
+  status              QuestionStatus @default(UNPREPARED)
+  candidateNotes      String?        @db.Text
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  interview           Interview      @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId])
+  @@map("practice_questions")
+}
+
+model ChecklistItem {
+  id          String    @id @default(uuid())
+  interviewId String
+  label       String
+  isCompleted Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@index([interviewId])
+  @@map("checklist_items")
+}
+
