@@ -1,0 +1,121 @@
+<div class="container">
+  <div class="header-row">
+    <div>
+      <h1 class="page-title">Confirmed Interviews</h1>
+      <p class="page-subtitle">Track real upcoming interviews, analyze skill gaps, and practice round-specific questions.</p>
+    </div>
+    <button class="btn btn-primary" (click)="toggleNewModal()">
+      + Schedule Interview
+    </button>
+  </div>
+
+  <!-- New Interview Modal / Panel -->
+  @if (showModal()) {
+    <div class="card form-modal-card">
+      <h2 class="form-title">Schedule Confirmed Interview</h2>
+      <form (ngSubmit)="submitInterview()">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Company Name *</label>
+            <input class="form-control" [(ngModel)]="newInterview.company" name="company" placeholder="e.g. Stripe, Google" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role Title *</label>
+            <input class="form-control" [(ngModel)]="newInterview.role" name="role" placeholder="e.g. Senior Backend Engineer" required />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Round Type *</label>
+            <select class="form-control" [(ngModel)]="newInterview.roundType" name="roundType">
+              <option value="SCREENING">Screening</option>
+              <option value="TECHNICAL">Technical Coding / Architecture</option>
+              <option value="SYSTEM_DESIGN">System Design</option>
+              <option value="BEHAVIORAL">Behavioral / Leadership</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Scheduled Date & Time *</label>
+            <input class="form-control" type="datetime-local" [(ngModel)]="newInterview.scheduledAt" name="scheduledAt" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Paste Full Job Description (JD) *</label>
+          <textarea class="form-control jd-textarea" [(ngModel)]="newInterview.jobDescriptionText" name="jobDescriptionText" placeholder="Paste the job description here. The AI will extract requirements and cross-reference them with your evidence notes..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Optional Notes</label>
+          <input class="form-control" [(ngModel)]="newInterview.notes" name="notes" placeholder="e.g. Recruiter mentioned focus on concurrency and distributed systems" />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="toggleNewModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading()">
+            @if (loading()) { <span class="spinner"></span> }
+            Save & Open Prep Room
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Interviews Grid -->
+  @if (loading() && interviews().length === 0) {
+    <div class="loading-state">
+      <span class="spinner"></span> Loading interviews...
+    </div>
+  } @else if (interviews().length === 0) {
+    <div class="card empty-state">
+      <h3>No confirmed interviews yet</h3>
+      <p>Schedule your first interview round to begin analyzing gaps and generating practice questions.</p>
+      <button class="btn btn-primary" (click)="toggleNewModal()">+ Schedule Confirmed Interview</button>
+    </div>
+  } @else {
+    <div class="interviews-grid">
+      @for (item of interviews(); track item.id) {
+        <div class="card interview-card">
+          <div>
+            <div class="card-header">
+              <div>
+                <h2 class="company-name">{{ item.company }}</h2>
+                <p class="role-title">{{ item.role }}</p>
+              </div>
+              <span class="badge badge-round">{{ item.roundType }}</span>
+            </div>
+
+            <div class="interview-meta">
+              <div>📅 {{ item.scheduledAt | date:'medium' }}</div>
+            </div>
+
+            <!-- Readiness Progress Bar -->
+            <div class="readiness-block">
+              <div class="readiness-header">
+                <span>Preparation Readiness</span>
+                <span [style.color]="item.readinessScore >= 70 ? 'var(--success)' : (item.readinessScore >= 40 ? 'var(--warning)' : '#94a3b8')">
+                  {{ item.readinessScore }}%
+                </span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" [style.width.%]="item.readinessScore"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <a [routerLink]="['/interviews', item.id]" class="btn btn-primary enter-btn">
+              Enter Prep Room 🎯
+            </a>
+            <button class="btn btn-outline" (click)="deleteInterview(item.id, $event)" title="Delete interview">
+              🗑️
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+

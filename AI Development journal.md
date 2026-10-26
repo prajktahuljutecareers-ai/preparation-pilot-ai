@@ -121,6 +121,31 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 3. **Deterministic Readiness Algorithm**:
    * `ReadinessService`: Computes readiness percentage mathematically without AI hallucination (70% question mastery + 30% checklist tasks).
    * Updates `Interview.readinessScore` in PostgreSQL on every state mutation.
+4. **Resilient AI Gateway**:
+   * Added retry backoff and model fallback (`gemini-3.8-flash` → `gemini-3.8-pro`) to gracefully handle transient 503 capacity spikes.
+
+---
+
+## Session 7 — Modern Angular Frontend (The Prep Room)
+
+**Date**: 23 October 2026  
+**Objective**: Build a clean, responsive single-page web app in Angular 18 connecting the full end-to-end preparation lifecycle.
+
+### Achievements:
+1. **Angular 18 Standalone Architecture**:
+   * Single-page routing with `withComponentInputBinding()` and `provideHttpClient()`.
+2. **Type-Safe API Service**:
+   * `ApiService` handling all REST endpoints across skills, interviews, gap analysis, question flashcards, and checklists.
+3. **Interactive Views**:
+   * **Confirmed Interviews Dashboard** (`InterviewListComponent`): Displays scheduled rounds, company cards, and readiness progress bars with a quick-schedule modal.
+   * **Skills Profile & Evidence** (`SkillsProfileComponent`): Form and cards highlighting real production evidence vs. tutorial claims.
+   * **The Prep Room** (`PrepRoomComponent`):
+     * Real-time deterministic readiness score badge and progress bar.
+     * Tab 1: AI Gap Analysis with quoted JD excerpts, AI rationale, and one-click candidate override.
+     * Tab 2: Question flashcards with expandable talking points, candidate note-taking, and status toggles (`Unprepared`, `Drafted`, `Mastered`).
+     * Tab 3: Actionable preparation checklist.
+4. **Modern Dark Theme & Design System**:
+   * Professional UI with color-coded gap severities (Red for Critical, Amber for Minor, Emerald for Strengths).
 
 ---
 
@@ -132,4 +157,4 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 * [x] Step 5: Implement Interview Management Module
 * [x] Step 6: Implement AI Service & Skill-Gap Analysis Engine
 * [x] Step 7: Implement Practice Questions & Readiness Score Engine
-* [ ] Step 8: Angular Frontend Setup & The Prep Room UI
+* [x] Step 8: Angular Frontend Setup & The Prep Room UI

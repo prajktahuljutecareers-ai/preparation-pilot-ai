@@ -1,0 +1,256 @@
+<div class="container" *ngIf="interview(); else loadingTpl">
+  <!-- Back Navigation & Header -->
+  <div class="nav-back">
+    <a routerLink="/interviews" class="back-link">
+      ← Back to Confirmed Interviews
+    </a>
+  </div>
+
+  <!-- Interview Hero Card -->
+  <div class="card hero-card">
+    <div class="hero-content">
+      <div>
+        <div class="hero-title-row">
+          <h1 class="hero-company">{{ interview()!.company }}</h1>
+          <span class="badge badge-round">{{ interview()!.roundType }}</span>
+        </div>
+        <p class="hero-role">{{ interview()!.role }}</p>
+        <p class="hero-schedule">
+          📅 Scheduled: {{ interview()!.scheduledAt | date:'fullDate' }} at {{ interview()!.scheduledAt | date:'shortTime' }}
+        </p>
+      </div>
+
+      <!-- Deterministic Readiness Metric Box -->
+      <div class="readiness-box">
+        <div class="readiness-tag">Preparation Readiness</div>
+        <div class="readiness-value"
+             [style.color]="interview()!.readinessScore >= 70 ? 'var(--success)' : (interview()!.readinessScore >= 40 ? 'var(--warning)' : '#cbd5e1')">
+          {{ interview()!.readinessScore }}%
+        </div>
+        <div class="progress-bar-bg progress-bar-slim">
+          <div class="progress-bar-fill" [style.width.%]="interview()!.readinessScore"></div>
+        </div>
+        <div class="readiness-subtext">
+          {{ masteredCount() }} of {{ questions().length }} Questions Mastered
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs-nav">
+    <button class="btn" [ngClass]="activeTab() === 'gaps' ? 'btn-primary' : 'btn-outline'" (click)="activeTab.set('gaps')">
+      1. Skill-Gap Analysis ({{ assessments().length }})
+    </button>
+    <button class="btn" [ngClass]="activeTab() === 'questions' ? 'btn-primary' : 'btn-outline'" (click)="activeTab.set('questions')">
+      2. Practice Questions ({{ questions().length }})
+    </button>
+    <button class="btn" [ngClass]="activeTab() === 'checklist' ? 'btn-primary' : 'btn-outline'" (click)="activeTab.set('checklist')">
+      3. Prep Checklist ({{ completedTasksCount() }}/{{ checklist().length }})
+    </button>
+  </div>
+
+  <!-- TAB 1: SKILL GAP ANALYSIS -->
+  @if (activeTab() === 'gaps') {
+    <div>
+      <div class="tab-header">
+        <div>
+          <h2 class="tab-title">Evidence-Backed Skill-Gap Detection</h2>
+          <p class="tab-subtitle">
+            AI compares the JD requirements against your documented evidence notes and cites exact JD excerpts.
+          </p>
+        </div>
+        <button class="btn btn-primary" (click)="runAnalysis()" [disabled]="analyzing()">
+          @if (analyzing()) { <span class="spinner"></span> Analyzing JD... }
+          @else { ⚡ Run AI Gap Analysis }
+        </button>
+      </div>
+
+      @if (assessments().length === 0) {
+        <div class="card empty-state">
+          <h3>No skill gaps analyzed yet</h3>
+          <p>
+            Click "Run AI Gap Analysis" to extract requirements from this JD and compare them against your skills profile.
+          </p>
+          <button class="btn btn-primary" (click)="runAnalysis()" [disabled]="analyzing()">
+            @if (analyzing()) { <span class="spinner"></span> Analyzing... }
+            @else { ⚡ Run AI Gap Analysis }
+          </button>
+        </div>
+      } @else {
+        <div class="items-stack">
+          @for (item of assessments(); track item.id) {
+            <div class="card item-card" [style.border-left]="'5px solid ' + getLevelColor(item.verifiedLevel)">
+              <div class="card-header-row">
+                <div>
+                  <h3 class="assessment-skill-title">{{ item.skillName }}</h3>
+                  <div class="badge-row">
+                    <span class="badge" [ngClass]="{
+                      'badge-critical': item.verifiedLevel === 'CRITICAL_GAP',
+                      'badge-minor': item.verifiedLevel === 'MINOR_GAP',
+                      'badge-strength': item.verifiedLevel === 'STRENGTH'
+                    }">{{ item.verifiedLevel }}</span>
+                    @if (item.verifiedLevel !== item.suggestedLevel) {
+                      <span class="proposed-badge">(AI proposed: {{ item.suggestedLevel }})</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Human-in-the-loop Override -->
+                <div class="override-box">
+                  <span class="override-label">Override:</span>
+                  <select class="form-control override-select"
+                          [ngModel]="item.verifiedLevel"
+                          (ngModelChange)="onOverrideLevel(item, $event)">
+                    <option value="CRITICAL_GAP">Critical Gap</option>
+                    <option value="MINOR_GAP">Minor Gap</option>
+                    <option value="STRENGTH">Strength</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Quoted JD Requirement -->
+              <div class="jd-quote-box">
+                <span class="jd-quote-label">Quoted JD Excerpt:</span>
+                <p class="jd-quote-text">"{{ item.jdRequirementText }}"</p>
+              </div>
+
+              <!-- AI Rationale -->
+              <div class="ai-rationale-text">
+                <strong class="label-muted">AI Rationale:</strong> {{ item.aiRationale }}
+              </div>
+
+              @if (item.userNotes) {
+                <div class="user-notes-text">
+                  <strong>Candidate Note:</strong> {{ item.userNotes }}
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB 2: TARGETED PRACTICE QUESTIONS -->
+  @if (activeTab() === 'questions') {
+    <div>
+      <div class="tab-header">
+        <div>
+          <h2 class="tab-title">Round-Specific Practice Questions</h2>
+          <p class="tab-subtitle">
+            Targeting identified skill gaps in the context of a <strong>{{ interview()!.roundType }}</strong> interview.
+          </p>
+        </div>
+        <button class="btn btn-primary" (click)="generateQuestions()" [disabled]="generating()">
+          @if (generating()) { <span class="spinner"></span> Generating... }
+          @else { 🎯 Generate Gap-Targeted Questions }
+        </button>
+      </div>
+
+      @if (questions().length === 0) {
+        <div class="card empty-state">
+          <h3>No practice questions generated yet</h3>
+          <p>
+            Generate questions tailored to your gaps (e.g. Apache Kafka, concurrency) to practice high-scoring responses.
+          </p>
+          <button class="btn btn-primary" (click)="generateQuestions()" [disabled]="generating()">
+            @if (generating()) { <span class="spinner"></span> Generating... }
+            @else { 🎯 Generate Practice Questions }
+          </button>
+        </div>
+      } @else {
+        <div class="items-stack">
+          @for (q of questions(); track q.id; let idx = $index) {
+            <div class="card item-card">
+              <div class="question-header-row">
+                <div>
+                  <span class="question-index-tag">Question {{ idx + 1 }} • Target Gap: {{ q.targetedSkill }}</span>
+                  <h3 class="question-text">{{ q.questionText }}</h3>
+                </div>
+
+                <!-- Status Selector Button Group -->
+                <div class="status-btn-group">
+                  <button class="btn status-btn"
+                          [ngClass]="q.status === 'UNPREPARED' ? 'btn-secondary' : 'btn-outline'"
+                          (click)="updateQuestionStatus(q, 'UNPREPARED')">
+                    Unprepared
+                  </button>
+                  <button class="btn status-btn"
+                          [ngClass]="q.status === 'DRAFTED' ? 'btn-secondary' : 'btn-outline'"
+                          (click)="updateQuestionStatus(q, 'DRAFTED')">
+                    Drafted
+                  </button>
+                  <button class="btn status-btn"
+                          [ngClass]="q.status === 'MASTERED' ? 'btn-primary' : 'btn-outline'"
+                          (click)="updateQuestionStatus(q, 'MASTERED')">
+                    ✓ Mastered
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sample Talking Points -->
+              <div class="talking-points-box">
+                <div class="talking-points-title">
+                  💡 Recommended Talking Points:
+                </div>
+                <ul class="talking-points-list">
+                  @for (point of q.sampleTalkingPoints; track point) {
+                    <li>{{ point }}</li>
+                  }
+                </ul>
+              </div>
+
+              <!-- Candidate Answer Notes -->
+              <div class="form-group notes-group">
+                <label class="form-label notes-label">Your Preparation Notes / Custom Talking Points:</label>
+                <textarea class="form-control notes-textarea"
+                          [(ngModel)]="q.candidateNotes"
+                          (blur)="saveQuestionNotes(q)"
+                          placeholder="Write key architectural trade-offs or personal experiences you want to mention in the interview..."></textarea>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB 3: CHECKLIST -->
+  @if (activeTab() === 'checklist') {
+    <div>
+      <div class="tab-header">
+        <div>
+          <h2 class="tab-title">Preparation Checklist</h2>
+          <p class="tab-subtitle">
+            Complete these tasks before the interview date. Each item deterministically boosts your Readiness Score.
+          </p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="checklist-stack">
+          @for (item of checklist(); track item.id) {
+            <label class="checklist-item">
+              <input type="checkbox" class="checklist-checkbox"
+                     [checked]="item.isCompleted"
+                     (change)="toggleChecklist(item)" />
+              <span class="checklist-label"
+                    [style.text-decoration]="item.isCompleted ? 'line-through' : 'none'"
+                    [style.color]="item.isCompleted ? 'var(--text-muted)' : '#fff'">
+                {{ item.label }}
+              </span>
+            </label>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<ng-template #loadingTpl>
+  <div class="container loading-container">
+    <span class="spinner"></span> Loading Prep Room...
+  </div>
+</ng-template>
+

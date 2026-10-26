@@ -1,0 +1,308 @@
+.nav-back {
+  margin-bottom: 20px;
+}
+
+.back-link {
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.hero-card {
+  border-left: 5px solid var(--primary);
+  margin-bottom: 24px;
+}
+
+.hero-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.hero-company {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.hero-role {
+  font-size: 1.1rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.hero-schedule {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.readiness-box {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 16px 24px;
+  min-width: 240px;
+  text-align: center;
+}
+
+.readiness-tag {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.readiness-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 4px 0;
+}
+
+.progress-bar-slim {
+  height: 8px;
+}
+
+.readiness-subtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.tabs-nav {
+  display: flex;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tab-title {
+  font-size: 1.3rem;
+}
+
+.tab-subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty-state h3 {
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: var(--text-muted);
+  margin: 12px 0 20px;
+}
+
+.items-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.item-card {
+  margin-bottom: 0;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.assessment-skill-title {
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.badge-row {
+  margin-top: 4px;
+}
+
+.proposed-badge {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.override-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.override-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.override-select {
+  width: auto;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+}
+
+.jd-quote-box {
+  background-color: var(--bg-main);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin: 8px 0;
+  border: 1px dashed var(--border-color);
+}
+
+.jd-quote-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #818cf8;
+  font-weight: 700;
+}
+
+.jd-quote-text {
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.ai-rationale-text {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+}
+
+.label-muted {
+  color: var(--text-muted);
+}
+
+.user-notes-text {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #38bdf8;
+}
+
+.question-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.question-index-tag {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #818cf8;
+  text-transform: uppercase;
+}
+
+.question-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 4px;
+}
+
+.status-btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.status-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.talking-points-box {
+  background-color: var(--bg-main);
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  margin: 12px 0;
+}
+
+.talking-points-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--success);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.talking-points-list {
+  padding-left: 20px;
+  font-size: 0.9rem;
+  color: #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.notes-group {
+  margin-bottom: 0;
+}
+
+.notes-label {
+  font-size: 0.8rem;
+}
+
+.notes-textarea {
+  min-height: 70px;
+  font-size: 0.88rem;
+}
+
+.checklist-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  padding: 10px;
+  background-color: var(--bg-main);
+  border-radius: var(--radius-sm);
+}
+
+.checklist-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+
+.checklist-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text-muted);
+}
+

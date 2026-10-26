@@ -1,0 +1,98 @@
+<div class="container">
+  <div class="header-row">
+    <div>
+      <h1 class="page-title">Skills Profile & Evidence</h1>
+      <p class="page-subtitle">
+        Document your genuine production experience. The AI uses your <strong>evidence notes</strong> (not labels) to evaluate job requirements.
+      </p>
+    </div>
+    <button class="btn btn-primary" (click)="toggleNewModal()">
+      + Add New Skill
+    </button>
+  </div>
+
+  <!-- Add Skill Form Card -->
+  @if (showModal()) {
+    <div class="card form-modal-card">
+      <h2 class="form-title">Add Skill with Evidence</h2>
+      <form (ngSubmit)="submitSkill()">
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Skill Name *</label>
+            <input class="form-control" [(ngModel)]="newSkill.name" name="name" placeholder="e.g. Apache Kafka, NestJS, PostgreSQL" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <input class="form-control" [(ngModel)]="newSkill.category" name="category" placeholder="e.g. Backend, Cloud, Database" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Proficiency</label>
+            <select class="form-control" [(ngModel)]="newSkill.proficiencyLevel" name="proficiencyLevel">
+              <option value="BEGINNER">Beginner</option>
+              <option value="INTERMEDIATE">Intermediate</option>
+              <option value="ADVANCED">Advanced</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Evidence & Production Experience *</label>
+          <textarea class="form-control evidence-textarea" [(ngModel)]="newSkill.evidenceNotes" name="evidenceNotes" placeholder="Describe real production experience vs tutorial knowledge. (e.g. 'Built production consumer groups handling 10k msg/sec; implemented DLQ error handling' vs 'Built local demo with docker')." required></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="toggleNewModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading()">
+            Save Skill
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Skills Cards -->
+  @if (loading() && skills().length === 0) {
+    <div class="loading-state">
+      <span class="spinner"></span> Loading skills...
+    </div>
+  } @else if (skills().length === 0) {
+    <div class="card empty-state">
+      <h3>No skills added yet</h3>
+      <p>Add your technical skills and documented evidence notes to ground the AI analysis.</p>
+      <button class="btn btn-primary" (click)="toggleNewModal()">+ Add Your First Skill</button>
+    </div>
+  } @else {
+    <div class="skills-grid">
+      @for (skill of skills(); track skill.id) {
+        <div class="card skill-card">
+          <div>
+            <div class="skill-header">
+              <h3 class="skill-name">{{ skill.name }}</h3>
+              <span class="badge" [ngClass]="{
+                'badge-strength': skill.proficiencyLevel === 'ADVANCED',
+                'badge-minor': skill.proficiencyLevel === 'INTERMEDIATE',
+                'badge-critical': skill.proficiencyLevel === 'BEGINNER'
+              }">{{ skill.proficiencyLevel }}</span>
+            </div>
+
+            <div class="skill-category">
+              📁 {{ skill.category }}
+            </div>
+
+            <div class="evidence-box">
+              <div class="evidence-tag">Production Evidence:</div>
+              <p class="evidence-text">{{ skill.evidenceNotes }}</p>
+            </div>
+          </div>
+
+          <div class="skill-footer">
+            <button class="btn btn-outline delete-btn" (click)="deleteSkill(skill.id)">
+              Delete
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
