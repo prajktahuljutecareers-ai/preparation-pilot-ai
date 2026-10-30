@@ -204,6 +204,8 @@ When a candidate marks a question as `MASTERED` or checks a `ChecklistItem`:
 | Verb | Route | Description |
 | :--- | :--- | :--- |
 | `POST` | `/api/skills` | Create a new skill with mandatory evidence notes |
+| `POST` | `/api/skills/extract-from-resume` | Extract skills & synthesize evidence notes from resume text |
+| `POST` | `/api/skills/bulk-import` | Bulk upsert candidate-approved skills into profile |
 | `GET` | `/api/skills` | List all user skills (supports category filtering) |
 | `GET` | `/api/skills/:id` | Get single skill details |
 | `PUT` | `/api/skills/:id` | Update proficiency or evidence notes |

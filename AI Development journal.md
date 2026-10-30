@@ -144,8 +144,28 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
      * Tab 1: AI Gap Analysis with quoted JD excerpts, AI rationale, and one-click candidate override.
      * Tab 2: Question flashcards with expandable talking points, candidate note-taking, and status toggles (`Unprepared`, `Drafted`, `Mastered`).
      * Tab 3: Actionable preparation checklist.
-4. **Modern Dark Theme & Design System**:
-   * Professional UI with color-coded gap severities (Red for Critical, Amber for Minor, Emerald for Strengths).
+4. **Clean Component Separation**:
+   * Split components into separate `.html`, `.css`, and `.ts` files according to Angular conventions.
+
+---
+
+## Session 8 & 9 — AI Resume Skill Extraction & Bulk Import (Full Stack)
+
+**Date**: 26 October 2026  
+**Objective**: Build the full-stack AI Resume Parsing pipeline to extract technical skills and synthesize production evidence notes directly from work history bullets.
+
+### Achievements:
+1. **AI Resume Extraction Engine**:
+   * `AiService.extractSkillsFromResume`: Parses raw resume text into structured technical skills.
+   * Synthesizes concrete `evidenceNotes` directly from work history and project bullets rather than empty placeholders.
+   * Determines proficiency (`BEGINNER`, `INTERMEDIATE`, `ADVANCED`) based on real production exposure.
+2. **Bulk Upsert Pipeline**:
+   * `SkillsService.bulkImport`: Uses Prisma `upsert` to insert new skills or update existing ones in batch.
+   * REST endpoints: `POST /api/skills/extract-from-resume` and `POST /api/skills/bulk-import`.
+3. **Interactive Frontend Review Drawer**:
+   * Added **"📄 Import from Resume"** action on the Skills Profile view.
+   * Two-step flow: Paste resume text → interactive review list with checkboxes, proficiency selectors, and editable evidence notes.
+   * One-click bulk import to PostgreSQL database.
 
 ---
 
@@ -158,3 +178,4 @@ AI coding tools: Google Antigravity, Gemini, GitHub Copilot
 * [x] Step 6: Implement AI Service & Skill-Gap Analysis Engine
 * [x] Step 7: Implement Practice Questions & Readiness Score Engine
 * [x] Step 8: Angular Frontend Setup & The Prep Room UI
+* [x] Step 9: AI Resume Skill Extraction & Bulk Import (Full Stack)

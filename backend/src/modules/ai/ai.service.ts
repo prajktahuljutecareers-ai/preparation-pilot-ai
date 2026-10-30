@@ -14,14 +14,22 @@ export interface GeneratedQuestionItem {
   sampleTalkingPoints: string[];
 }
 
+export interface ExtractedResumeSkill {
+  name: string;
+  category: string;
+  proficiencyLevel: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+  yearsExperience?: number;
+  evidenceNotes: string;
+}
+
 @Injectable()
 export class AiService {
   private ai: GoogleGenAI;
-  // Primary model with fallback models in case of temporary 503 capacity spikes
+  // Primary model with fallback for temporary 503 capacity spikes
+  // Note: Only use models confirmed available on your API key tier
   private readonly models = [
     'gemini-3.8-flash',
     'gemini-3.8-pro',
-    'gemini-2.5-flash',
   ];
 
   constructor() {
@@ -253,6 +261,87 @@ ${JSON.stringify(strengths, null, 2)}
       console.error('Gemini question generation failed:', error);
       throw new InternalServerErrorException(
         `AI Question Generation failed: ${error?.message || 'Unknown error'}`,
+      );
+    }
+  }
+
+  async extractSkillsFromResume(resumeText: string): Promise<ExtractedResumeSkill[]> {
+    try {
+      const prompt = `
+You are an expert technical recruiter and resume analyzer.
+Analyze the following candidate Resume / CV text and extract the key technical skills along with verified evidence of use.
+
+CRITICAL INSTRUCTIONS:
+1. For each distinct technical skill (e.g. Languages, Frameworks, Databases, Cloud & DevOps, Architecture, Messaging, APIs):
+   - Extract the standard skill name (e.g. "PostgreSQL", "NestJS", "Kubernetes", "TypeScript", "Redis", "Docker").
+   - Categorize it (e.g., "Backend", "Database", "Cloud", "Frontend", "DevOps", "Architecture").
+   - Determine the proficiency level based on real usage in the resume:
+     * "ADVANCED": Used as core technology in primary roles for multiple years with architecture, scaling, or team leadership impact.
+     * "INTERMEDIATE": Used regularly in production to build features, APIs, or database queries.
+     * "BEGINNER": Mentioned only in coursework, personal projects, or listed passively in skills list without work history evidence.
+   - Estimate years of experience if ascertainable from role dates (or leave null).
+   - MANDATORY "evidenceNotes": Synthesize concrete evidence directly from what the candidate achieved in their work history or project bullets (e.g. "Architected distributed payment ingestion pipeline; implemented custom interceptors and Prisma ORM integration"). Do NOT write vague generic sentences; ground it directly in the resume text.
+2. Return between 6 and 20 high-yield technical skills that truly represent the candidate's capabilities.
+
+---
+CANDIDATE RESUME:
+${resumeText}
+`;
+
+      const response = await this.executeWithFallback((model) =>
+        this.ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: Type.ARRAY,
+              description: 'List of extracted technical skills from the resume',
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: {
+                    type: Type.STRING,
+                    description: 'Technical skill name (e.g. NestJS, PostgreSQL)',
+                  },
+                  category: {
+                    type: Type.STRING,
+                    description: 'Category (e.g. Backend, Frontend, Cloud, Database, DevOps)',
+                  },
+                  proficiencyLevel: {
+                    type: Type.STRING,
+                    enum: ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'],
+                    description: 'Assessed proficiency based on resume usage depth',
+                  },
+                  evidenceNotes: {
+                    type: Type.STRING,
+                    description:
+                      'Synthesized production evidence based directly on resume work history bullets',
+                  },
+                },
+                required: [
+                  'name',
+                  'category',
+                  'proficiencyLevel',
+                  'evidenceNotes',
+                ],
+              },
+            },
+          },
+        }),
+      );
+
+      const responseText = response.text;
+      if (!responseText) {
+        throw new Error('Empty response received from Gemini API.');
+      }
+
+      const skills: ExtractedResumeSkill[] = JSON.parse(responseText);
+      return skills;
+    } catch (error: any) {
+      console.error('Gemini resume skill extraction failed:', error);
+      throw new InternalServerErrorException(
+        `Resume Skill Extraction failed: ${error?.message || 'Unknown error'}`,
       );
     }
   }

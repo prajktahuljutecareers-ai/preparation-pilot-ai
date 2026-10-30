@@ -5,6 +5,7 @@ import {
   ChecklistItem,
   CreateInterviewDto,
   CreateSkillDto,
+  ExtractedResumeSkill,
   Interview,
   InterviewSkillAssessment,
   PracticeQuestion,
@@ -32,6 +33,22 @@ export class ApiService {
 
   deleteSkill(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/skills/${id}`);
+  }
+
+  extractSkillsFromResume(resumeText: string): Observable<ExtractedResumeSkill[]> {
+    return this.http.post<ExtractedResumeSkill[]>(
+      `${this.baseUrl}/skills/extract-from-resume`,
+      { resumeText },
+    );
+  }
+
+  bulkImportSkills(
+    skills: CreateSkillDto[],
+  ): Observable<{ importedCount: number; skills: UserSkill[] }> {
+    return this.http.post<{ importedCount: number; skills: UserSkill[] }>(
+      `${this.baseUrl}/skills/bulk-import`,
+      { skills },
+    );
   }
 
   // Interviews
@@ -108,4 +125,3 @@ export class ApiService {
     );
   }
 }
-

@@ -20,6 +20,35 @@
   margin-bottom: 30px;
 }
 
+.resume-modal-card {
+  border-left: 4px solid #6366f1;
+  background-color: var(--bg-surface);
+  margin-bottom: 30px;
+}
+
+.resume-textarea {
+  min-height: 140px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.extracted-items-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.extracted-item-row {
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  transition: opacity 0.2s ease;
+}
+
 .form-title {
   font-size: 1.3rem;
   margin-bottom: 16px;
@@ -128,4 +157,3 @@
   padding: 6px 12px;
   font-size: 0.85rem;
 }
-

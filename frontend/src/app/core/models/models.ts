@@ -32,6 +32,15 @@ export interface CreateSkillDto {
   yearsExperience?: number;
 }
 
+export interface ExtractedResumeSkill {
+  name: string;
+  category: string;
+  proficiencyLevel: ProficiencyLevel;
+  evidenceNotes: string;
+  yearsExperience?: number;
+  selected?: boolean;
+}
+
 export interface InterviewSkillAssessment {
   id: string;
   interviewId: string;
@@ -106,4 +115,3 @@ export interface ReadinessScoreResult {
   totalChecklistItems: number;
   completedChecklistItems: number;
 }
-

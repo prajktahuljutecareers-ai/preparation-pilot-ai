@@ -4,12 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { AiService } from '../ai/ai.service.js';
 import { CreateSkillDto } from './dto/create-skill.dto.js';
 import { UpdateSkillDto } from './dto/update-skill.dto.js';
 
 @Injectable()
 export class SkillsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly aiService: AiService,
+  ) {}
 
   async create(dto: CreateSkillDto) {
     const existing = await this.prisma.userSkill.findUnique({
@@ -79,5 +83,41 @@ export class SkillsService {
       where: { id },
     });
   }
-}
 
+  async extractFromResume(resumeText: string) {
+    console.log(`📄 [SkillsService] Received resume for extraction (${resumeText.length} characters)`);
+    const skills = await this.aiService.extractSkillsFromResume(resumeText);
+    console.log(`✅ [SkillsService] Successfully extracted ${skills.length} skills`);
+    return skills;
+  }
+
+  async bulkImport(skills: CreateSkillDto[]) {
+    console.log(`📥 [SkillsService] Bulk importing ${skills.length} skills...`);
+    const results = await Promise.all(
+      skills.map((s) =>
+        this.prisma.userSkill.upsert({
+          where: { name: s.name },
+          update: {
+            category: s.category,
+            proficiencyLevel: s.proficiencyLevel,
+            evidenceNotes: s.evidenceNotes,
+            yearsExperience: s.yearsExperience,
+          },
+          create: {
+            name: s.name,
+            category: s.category,
+            proficiencyLevel: s.proficiencyLevel,
+            evidenceNotes: s.evidenceNotes,
+            yearsExperience: s.yearsExperience,
+          },
+        }),
+      ),
+    );
+
+    console.log(`✅ [SkillsService] Bulk import completed for ${results.length} skills`);
+    return {
+      importedCount: results.length,
+      skills: results,
+    };
+  }
+}
